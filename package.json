@@ -1,0 +1,11 @@
+{
+  "name": "@muradibrahimov/grep",
+  "description": "Building my own Regex engine, Grep",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run app/main.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
