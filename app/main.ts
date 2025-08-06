@@ -14,7 +14,16 @@ for (let i = "A".charCodeAt(0); i < "Z".charCodeAt(0);i++){
 }
 ALPHA.push("_")
 function matchPattern(inputLine: string, pattern: string): boolean {
- if (pattern ===`\\d`) {
+  if (pattern.startsWith("[") && pattern.endsWith("]") ){
+    const sequence: string[] = pattern.slice(1,-1).split("")
+
+    for (const c of sequence){
+      if(inputLine.includes(c)) return true
+    }
+    return false
+  }
+
+  if (pattern ===`\\d`) {
   for (const digit of DIGITS){
     if(inputLine.includes(digit)) return true
   }
@@ -30,6 +39,7 @@ for(const digit of DIGITS){
 }
 return false
  }
+
   if (pattern.length === 1) {
     return inputLine.includes(pattern);
   } else {
