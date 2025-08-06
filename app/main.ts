@@ -3,7 +3,33 @@ const pattern = args[3];
 
 const inputLine: string = await Bun.stdin.text();
 
+const DIGITS: string[] = ["0","1","2","3","4","5","6","7","8","9"];
+const ALPHA: string[] = [];
+
+for (let i = "a".charCodeAt(0); i < "z".charCodeAt(0);i++){
+  ALPHA.push(String.fromCharCode(i))
+}
+for (let i = "A".charCodeAt(0); i < "Z".charCodeAt(0);i++){
+  ALPHA.push(String.fromCharCode(i))
+}
+ALPHA.push("_")
 function matchPattern(inputLine: string, pattern: string): boolean {
+ if (pattern ===`\\d`) {
+  for (const digit of DIGITS){
+    if(inputLine.includes(digit)) return true
+  }
+   return false
+ }
+ if (pattern ===`\\w`){
+for(const c of ALPHA){
+  if (inputLine.includes(c)) return true
+}
+for(const digit of DIGITS){
+   if (inputLine.includes(digit))
+  return true
+}
+return false
+ }
   if (pattern.length === 1) {
     return inputLine.includes(pattern);
   } else {
@@ -23,4 +49,4 @@ if (matchPattern(inputLine, pattern)) {
 } else {
   process.exit(1);
 }
-//aaaa
+//aaaaaaaa
