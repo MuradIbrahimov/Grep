@@ -1,3 +1,5 @@
+import { log } from "console";
+
 const args = process.argv;
 const pattern = args[3];
 
@@ -14,6 +16,16 @@ for (let i = "A".charCodeAt(0); i < "Z".charCodeAt(0);i++){
 }
 ALPHA.push("_")
 function matchPattern(inputLine: string, pattern: string): boolean {
+  if (pattern.startsWith("[^") && pattern.endsWith("]")){
+    let isNegative = false
+    const sequence: string[] = pattern.slice(2,-1).split("")
+    for(const c of sequence){
+      if(!inputLine.includes(c)) isNegative = true
+    }
+    console.log(isNegative);
+    
+    return isNegative
+  } 
   if (pattern.startsWith("[") && pattern.endsWith("]") ){
     const sequence: string[] = pattern.slice(1,-1).split("")
 
