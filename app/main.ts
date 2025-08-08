@@ -5,58 +5,83 @@ const pattern = args[3];
 
 const inputLine: string = await Bun.stdin.text();
 
-const DIGITS: string[] = ["0","1","2","3","4","5","6","7","8","9"];
+const DIGITS: string[] = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
 const ALPHA: string[] = [];
 
-for (let i = "a".charCodeAt(0); i < "z".charCodeAt(0);i++){
-  ALPHA.push(String.fromCharCode(i))
+for (let i = "a".charCodeAt(0); i <= "z".charCodeAt(0); i++) {
+  ALPHA.push(String.fromCharCode(i));
 }
-for (let i = "A".charCodeAt(0); i < "Z".charCodeAt(0);i++){
-  ALPHA.push(String.fromCharCode(i))
+for (let i = "A".charCodeAt(0); i <= "Z".charCodeAt(0); i++) {
+  ALPHA.push(String.fromCharCode(i));
 }
-ALPHA.push("_")
-function matchPattern(inputLine: string, pattern: string): boolean {
-  if (pattern.startsWith("[^") && pattern.endsWith("]")){
-    let isNegative = false
-    const sequence: string[] = pattern.slice(2,-1).split("")
-    for(const c of sequence){
-      if(!inputLine.includes(c)) isNegative = true
+ALPHA.push("_");
+function tokenize(pattern: string): string[] {
+  const tokens: string[] = [];
+  let i = 0;
+
+  while (i < pattern.length) {
+    if (pattern[i] === "\\" && i + 1 < pattern.length) {
+      tokens.push(pattern.slice(i, i + 2)); // \d or \w
+      i += 2;
+    } else if (pattern[i] === "[" && i + 1 < pattern.length) {
+      let j = i + 1;
+      while (j < pattern.length && pattern[j] !== "]") j++;
+      if (j < pattern.length) {
+        tokens.push(pattern.slice(i, j + 1)); // [abc] or [^abc]
+        i = j + 1;
+      } else {
+        throw new Error("Unclosed [ in pattern");
+      }
+    } else {
+      // collect literal characters until next \ or [
+      let start = i;
+      while (i < pattern.length && pattern[i] !== "\\" && pattern[i] !== "[") {
+        i++;
+      }
+      tokens.push(pattern.slice(start, i)); // push literal like "apple"
     }
-    console.log(isNegative);
-    
-    return isNegative
-  } 
-  if (pattern.startsWith("[") && pattern.endsWith("]") ){
-    const sequence: string[] = pattern.slice(1,-1).split("")
+  }
 
-    for (const c of sequence){
-      if(inputLine.includes(c)) return true
+  return tokens;
+}
+
+function matchToken(segment: string, token: string): boolean {
+  if (token === "\\d") return segment.length === 1 && DIGITS.includes(segment);
+  if (token === "\\w") return segment.length === 1 && (ALPHA.includes(segment) || DIGITS.includes(segment));
+  if (token.startsWith("[^") && token.endsWith("]")) {
+    const chars = token.slice(2, -1).split("");
+    return segment.length === 1 && !chars.includes(segment);
+  }
+  if (token.startsWith("[") && token.endsWith("]")) {
+    const chars = token.slice(1, -1).split("");
+    return segment.length === 1 && chars.includes(segment);
+  }
+  return segment === token;
+}
+
+
+// ✅ Match entire pattern inside input
+function matchPattern(input: string, pattern: string): boolean {
+  const tokens = tokenize(pattern);
+
+  for (let i = 0; i <= input.length; i++) {
+    let matched = true;
+    let pos = i;
+
+    for (const token of tokens) {
+      const len = (token.startsWith("\\") || token.startsWith("[")) ? 1 : token.length;
+      const segment = input.slice(pos, pos + len);
+      if (!matchToken(segment, token)) {
+        matched = false;
+        break;
+      }
+      pos += len;
     }
-    return false
+
+    if (matched) return true;
   }
 
-  if (pattern ===`\\d`) {
-  for (const digit of DIGITS){
-    if(inputLine.includes(digit)) return true
-  }
-   return false
- }
- if (pattern ===`\\w`){
-for(const c of ALPHA){
-  if (inputLine.includes(c)) return true
-}
-for(const digit of DIGITS){
-   if (inputLine.includes(digit))
-  return true
-}
-return false
- }
-
-  if (pattern.length === 1) {
-    return inputLine.includes(pattern);
-  } else {
-    throw new Error(`Unhandled pattern: ${pattern}`);
-  }
+  return false;
 }
 
 if (args[2] !== "-E") {
