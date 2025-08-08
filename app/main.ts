@@ -18,10 +18,15 @@ ALPHA.push("_");
 function tokenize(pattern: string): string[] {
   const tokens: string[] = [];
   let i = 0;
+// check for ^ or $ pattern
 let hasAnchorStart = pattern[0] === "^" ? true : false
+let hasAnchorEnd = pattern[pattern.length-1] === "$" ? true : false
+
 if(hasAnchorStart) { 
   tokens.push("^")
   pattern = pattern.slice(1)}
+
+
   while (i < pattern.length) {
     if (pattern[i] === "\\" && i + 1 < pattern.length) {
       tokens.push(pattern.slice(i, i + 2)); // \d or \w
@@ -45,6 +50,14 @@ if(hasAnchorStart) {
     }
   }
 
+  if(hasAnchorEnd) { 
+    const last = tokens.pop(); // "apple$"
+
+    if (last && last.endsWith("$")) {
+      tokens.push(last.slice(0, -1)); // "apple"
+      tokens.push("$");               // "$"
+    }
+  }
   return tokens;
 }
 
@@ -66,28 +79,46 @@ function matchToken(segment: string, token: string): boolean {
 
 function matchPattern(input: string, pattern: string): boolean {
   const tokens = tokenize(pattern);
-console.log(tokens)
-  const anchored = tokens[0] === "^";
-  const startIndex = anchored ? 0 : 0;
-  const endIndex = anchored ? 0 : input.length;
+console.log(tokens);
 
-  const tokensToMatch = anchored ? tokens.slice(1) : tokens;
+  let hasAnchorStart = false;
+  let hasAnchorEnd = false;
 
-  for (let i = startIndex; i <= endIndex; i++) {
+  if (tokens[0] === "^") {
+    hasAnchorStart = true;
+    tokens.shift(); // Remove ^ from tokens
+  }
+
+  if(tokens.at(-1) ==="$"){
+    hasAnchorEnd = true;
+    tokens.pop(); // Remove $ from tokens
+  }
+
+  const maxStart = hasAnchorStart ? 1 : input.length - tokens.length + 1;
+  
+  for (let i = 0; i < maxStart; i++) {
+    // Only try matching from start if ^ is used
+    if (hasAnchorStart && i !== 0) break;
+    
     let matched = true;
     let pos = i;
 
-    for (const token of tokensToMatch) {
+    for (const token of tokens) {
       const len = (token.startsWith("\\") || token.startsWith("[")) ? 1 : token.length;
       const segment = input.slice(pos, pos + len);
+
       if (!matchToken(segment, token)) {
         matched = false;
         break;
       }
+
       pos += len;
     }
 
-    if (matched) return true;
+      // ✅ Check for end anchor — match must end exactly at input's end
+      if (matched && (!hasAnchorEnd || pos === input.length)) {
+        return true;
+      }
   }
 
   return false;
