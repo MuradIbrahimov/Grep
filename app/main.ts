@@ -18,7 +18,10 @@ ALPHA.push("_");
 function tokenize(pattern: string): string[] {
   const tokens: string[] = [];
   let i = 0;
-
+let hasAnchorStart = pattern[0] === "^" ? true : false
+if(hasAnchorStart) { 
+  tokens.push("^")
+  pattern = pattern.slice(1)}
   while (i < pattern.length) {
     if (pattern[i] === "\\" && i + 1 < pattern.length) {
       tokens.push(pattern.slice(i, i + 2)); // \d or \w
@@ -46,6 +49,7 @@ function tokenize(pattern: string): string[] {
 }
 
 function matchToken(segment: string, token: string): boolean {
+ 
   if (token === "\\d") return segment.length === 1 && DIGITS.includes(segment);
   if (token === "\\w") return segment.length === 1 && (ALPHA.includes(segment) || DIGITS.includes(segment));
   if (token.startsWith("[^") && token.endsWith("]")) {
@@ -60,15 +64,20 @@ function matchToken(segment: string, token: string): boolean {
 }
 
 
-// ✅ Match entire pattern inside input
 function matchPattern(input: string, pattern: string): boolean {
   const tokens = tokenize(pattern);
+console.log(tokens)
+  const anchored = tokens[0] === "^";
+  const startIndex = anchored ? 0 : 0;
+  const endIndex = anchored ? 0 : input.length;
 
-  for (let i = 0; i <= input.length; i++) {
+  const tokensToMatch = anchored ? tokens.slice(1) : tokens;
+
+  for (let i = startIndex; i <= endIndex; i++) {
     let matched = true;
     let pos = i;
 
-    for (const token of tokens) {
+    for (const token of tokensToMatch) {
       const len = (token.startsWith("\\") || token.startsWith("[")) ? 1 : token.length;
       const segment = input.slice(pos, pos + len);
       if (!matchToken(segment, token)) {
