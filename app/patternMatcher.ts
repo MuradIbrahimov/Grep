@@ -10,13 +10,14 @@ function matchTokens(input: string, tokens: string[], startPos: number, hasAncho
 
   for (let j = 0; j < tokens.length; j++) {
     const token = tokens[j];
+    
     // Handle `+` operator with backtracking
     if (token.length === 2 && token[1] === '+') {
-    const repeatChar = token[0];
+      const repeatChar = token[0];
       let maxConsume = 0;
 
-    // For `.+`, match any characters
-    if (repeatChar === '.') {
+      // For `.+`, match any characters
+      if (repeatChar === '.') {
         // Count how many characters we can consume (any character)
         maxConsume = input.length - pos;
       } else {
@@ -54,26 +55,26 @@ function matchTokens(input: string, tokens: string[], startPos: number, hasAncho
       const optionalChar = token[0];
       const remainingTokens = tokens.slice(j + 1);
       
-// Try with the character (if it matches)
-let charMatches = false;
-if (pos < input.length) {
-  if (optionalChar === '.') {
-    charMatches = true; // Dot matches any character
-  } else {
-    charMatches = input[pos] === optionalChar;
-  }
-}
+      // Try with the character (if it matches)
+      let charMatches = false;
+      if (pos < input.length) {
+        if (optionalChar === '.') {
+          charMatches = true; // Dot matches any character
+        } else {
+          charMatches = input[pos] === optionalChar;
+        }
+      }
 
-if (charMatches) {
-  if (remainingTokens.length === 0) {
-    // No more tokens, check if we consumed exactly to the end (if anchored)
-    return !hasAnchorEnd || pos + 1 === input.length;
-  }
-  
-  if (matchTokens(input, remainingTokens, pos + 1, hasAnchorEnd)) {
-    return true;
-  }
-}
+      if (charMatches) {
+        if (remainingTokens.length === 0) {
+          // No more tokens, check if we consumed exactly to the end (if anchored)
+          return !hasAnchorEnd || pos + 1 === input.length;
+        }
+        
+        if (matchTokens(input, remainingTokens, pos + 1, hasAnchorEnd)) {
+          return true;
+        }
+      }
       
       // Try without the character (skip the optional char entirely)
       if (remainingTokens.length === 0) {
@@ -86,7 +87,7 @@ if (charMatches) {
 
     // Handle normal tokens
     else {
-        const len = (token.startsWith("\\") || token.startsWith("[")) ? 1 : token.length;
+      const len = (token.startsWith("\\") || token.startsWith("[")) ? 1 : token.length;
       
       if (pos + len > input.length) {
         return false;
@@ -100,7 +101,6 @@ if (charMatches) {
 
       pos += len;
     }
-      
   }
 
   // Check if we've consumed the entire string when anchored at end
@@ -124,6 +124,27 @@ export function matchPattern(input: string, pattern: string): boolean {
     tokens.pop();
   }
 
+  // NEW: Check for OR alternatives
+  if (tokens.includes("(") && tokens.includes("|")) {
+    const alternatives = parseAlternatives(tokens);
+    console.log("alternatives:", alternatives);
+    
+    // Test each alternative
+    for (const alternative of alternatives) {
+      const maxStart = hasAnchorStart ? 1 : input.length + 1;
+      
+      for (let i = 0; i < maxStart; i++) {
+        if (hasAnchorStart && i !== 0) break;
+        
+        if (matchTokens(input, alternative, i, hasAnchorEnd)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  // EXISTING: Normal matching logic
   const maxStart = hasAnchorStart ? 1 : input.length + 1;
 
   for (let i = 0; i < maxStart; i++) {
@@ -135,4 +156,43 @@ export function matchPattern(input: string, pattern: string): boolean {
   }
 
   return false;
+}
+
+function parseAlternatives(tokens: string[]): string[][] {
+  const alternatives: string[][] = [];
+  let currentAlternative: string[] = [];
+  
+  let i = 0;
+  
+  // Find the opening parenthesis
+  while (i < tokens.length && tokens[i] !== "(") {
+    currentAlternative.push(tokens[i]);
+    i++;
+  }
+  
+  const beforeParens = [...currentAlternative];
+  currentAlternative = [];
+  i++; // Skip the "("
+  
+  // Parse alternatives inside parentheses
+  while (i < tokens.length && tokens[i] !== ")") {
+    if (tokens[i] === "|") {
+      alternatives.push([...beforeParens, ...currentAlternative]);
+      currentAlternative = [];
+    } else {
+      currentAlternative.push(tokens[i]);
+    }
+    i++;
+  }
+  
+  // Add the last alternative
+  if (currentAlternative.length > 0) {
+    alternatives.push([...beforeParens, ...currentAlternative]);
+  }
+  
+  i++; // Skip the ")"
+  
+  // Add tokens after parentheses to all alternatives
+  const afterParens = tokens.slice(i);
+  return alternatives.map(alt => [...alt, ...afterParens]);
 }
