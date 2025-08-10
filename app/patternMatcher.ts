@@ -44,6 +44,32 @@ function matchTokens(input: string, tokens: string[], startPos: number, hasAncho
       return false; // No valid consumption worked
     }
 
+    // Handle `?` operator (zero or one)
+    else if (token.length === 2 && token[1] === '?') {
+      const optionalChar = token[0];
+      const remainingTokens = tokens.slice(j + 1);
+      
+      // Try with the character (if it matches)
+      if (pos < input.length && input[pos] === optionalChar) {
+        if (remainingTokens.length === 0) {
+          // No more tokens, check if we consumed exactly to the end (if anchored)
+          return !hasAnchorEnd || pos + 1 === input.length;
+        }
+        
+        if (matchTokens(input, remainingTokens, pos + 1, hasAnchorEnd)) {
+          return true;
+        }
+      }
+      
+      // Try without the character (skip the optional char entirely)
+      if (remainingTokens.length === 0) {
+        // No more tokens, check if we're at the right position
+        return !hasAnchorEnd || pos === input.length;
+      }
+      
+      return matchTokens(input, remainingTokens, pos, hasAnchorEnd);
+    }
+
     // Handle normal tokens
     else {
       const len = (token.startsWith("\\") || token.startsWith("[")) ? 1 : token.length;

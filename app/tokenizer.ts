@@ -39,21 +39,21 @@ export function tokenize(pattern: string): string[] {
       }
     }
 
-    // Check if next is '+' → create repeat token
-    if (i + 1 < pattern.length && pattern[i + 1] === "+") {
-      tokens.push(pattern[i] + "+");
+    // Check if next is '+' or '?' → create repeat token
+    if (i + 1 < pattern.length && (pattern[i + 1] === "+" || pattern[i + 1] === "?")) {
+      tokens.push(pattern[i] + pattern[i + 1]);
       i += 2;
       continue;
     }
 
-    // Group non-special literal characters
+    // Group non-special literal characters, but stop before quantifiers
     let start = i;
     while (
       i < pattern.length &&
       (ALPHA.includes(pattern[i]) || DIGITS.includes(pattern[i])) &&
       pattern[i] !== "\\" &&
       pattern[i] !== "[" &&
-      (i + 1 >= pattern.length || pattern[i + 1] !== "+")
+      (i + 1 >= pattern.length || (pattern[i + 1] !== "+" && pattern[i + 1] !== "?"))
     ) {
       i++;
     }
