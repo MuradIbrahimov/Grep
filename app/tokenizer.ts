@@ -45,6 +45,12 @@ export function tokenize(pattern: string): string[] {
       i += 2;
       continue;
     }
+     // Handle dot (.) as single character
+     if (pattern[i] === ".") {
+      tokens.push(".");
+      i++;
+      continue;
+    }
 
     // Group non-special literal characters, but stop before quantifiers
     let start = i;

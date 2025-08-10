@@ -2,7 +2,12 @@
 import { ALPHA, DIGITS } from './constants.js';
 
 export function matchToken(segment: string, token: string): boolean {
-  // Digit character class
+    // Dot matches any single character
+    if (token === ".") {
+        return segment.length === 1;
+      }
+
+    // Digit character class
   if (token === "\\d") {
     return segment.length === 1 && DIGITS.includes(segment);
   }
