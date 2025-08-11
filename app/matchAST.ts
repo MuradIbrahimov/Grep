@@ -69,6 +69,11 @@ export function matchAST(
             return [i + 1];
         }
         return [];
+      case "Word":
+        if (i < input.length && /[a-zA-Z0-9_]/.test(input[i])) {
+            return [i + 1];
+        }
+        return [];
       default:
         return [];
     }

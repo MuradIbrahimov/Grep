@@ -50,6 +50,12 @@ export function parseAlternatives(tokens: string[], start = 0): [RegexAST, numbe
 }else if (token === "\\d") {
   elements.push({ type: "Digit" });
   i++;
+}else if (token === "WILDCARD") {
+  elements.push({ type: "Wildcard" });
+  i++;
+}else if (token === "\\w") {
+  elements.push({ type: "Word" });
+  i++;
 }
          else {
             elements.push({ type: "Literal", value: token });

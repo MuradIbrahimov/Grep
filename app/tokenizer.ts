@@ -1,4 +1,5 @@
 // tokenizer.ts
+import { log } from 'node:console';
 import { ALPHA, DIGITS } from './constants.js';
 
 export function tokenize(pattern: string): string[] {
@@ -13,9 +14,8 @@ export function tokenize(pattern: string): string[] {
     tokens.push("^");
     pattern = pattern.slice(1);
   }
-
   if (hasAnchorEnd) {
-    pattern = pattern.slice(0, -1); // Remove $ from end for processing
+    pattern = pattern.slice(0, -1);
   }
 
   while (i < pattern.length) {
@@ -26,7 +26,7 @@ export function tokenize(pattern: string): string[] {
       continue;
     }
 
-    // Character classes like [abc] or [^abc]
+    // Character classes
     if (pattern[i] === "[" && i + 1 < pattern.length) {
       let j = i + 1;
       while (j < pattern.length && pattern[j] !== "]") j++;
@@ -39,46 +39,49 @@ export function tokenize(pattern: string): string[] {
       }
     }
 
-    // Check if next is '+' or '?' → create repeat token
-    if (i + 1 < pattern.length && (pattern[i + 1] === "+" || pattern[i + 1] === "?")) {
-      if(pattern[i] === ")") {
-        tokens.push(pattern[i]);
-        tokens.push(pattern[i + 1]);
-      }
-      else tokens.push(pattern[i] + pattern[i + 1]);
+    // Handle dot (.) as WILDCARD
+    if (pattern[i] === ".") {
+      tokens.push("WILDCARD");
+      i++;
+      continue;
+    }
+
+    // Handle quantifiers after )
+    if ((pattern[i] === "+" || pattern[i] === "?") && tokens.length > 0 && tokens[tokens.length - 1] === ")") {
+      tokens.push(pattern[i]);
+      i++;
+      continue;
+    }
+
+    // Handle quantifiers for single characters (e.g., s? or s+)
+    if ((pattern[i + 1] === "+" || pattern[i + 1] === "?") && pattern[i] !== ")" && pattern[i] !== ".") {
+      tokens.push(pattern[i] + pattern[i + 1]);
       i += 2;
       continue;
     }
-     // Handle dot (.) as single character
-     if (pattern[i] === ".") {
-      tokens.push(".");
-      i++;
-      continue;
-    }
 
-    // Group non-special literal characters, but stop before quantifiers
-    let start = i;
-    while (
-      i < pattern.length &&
-      (ALPHA.includes(pattern[i]) || DIGITS.includes(pattern[i])) &&
-      pattern[i] !== "\\" &&
-      pattern[i] !== "[" &&
-      (i + 1 >= pattern.length || (pattern[i + 1] !== "+" && pattern[i + 1] !== "?"))
-    ) {
-      i++;
-    }
+// Handle single literal with quantifier (e.g., a+ or a?)
+if (
+  (ALPHA.includes(pattern[i]) || DIGITS.includes(pattern[i]) || pattern[i] === "_") &&
+  (pattern[i + 1] === "+" || pattern[i + 1] === "?")
+) {
+  tokens.push(pattern[i] + pattern[i + 1]);
+  i += 2;
+  continue;
+}
 
-    if (start < i) {
-      tokens.push(pattern.slice(start, i));
-      continue;
-    }
+// Handle single literal
+if (ALPHA.includes(pattern[i]) || DIGITS.includes(pattern[i]) || pattern[i] === "_") {
+  tokens.push(pattern[i]);
+  i++;
+  continue;
+}
 
     // Fallback for single char
     tokens.push(pattern[i]);
     i++;
   }
 
-  // Add trailing $ if present
   if (hasAnchorEnd) {
     tokens.push("$");
   }
