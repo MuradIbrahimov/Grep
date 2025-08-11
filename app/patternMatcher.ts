@@ -22,7 +22,7 @@ export function matchPattern(input: string, pattern: string): boolean {
 
   // NEW: Check for OR alternatives
   if (tokens.includes("(") && tokens.includes("|")) {
-    const alternatives = parseAlternatives(tokens);
+    const [alternatives] = parseAlternatives(tokens);
     console.log("alternatives:", alternatives);
     
     // Test each alternative

@@ -1,7 +1,7 @@
 import { matchToken } from './tokenMatcher.js';
 
 // MatchTokens
-function matchTokens(input: string, tokens: string[], startPos: number, hasAnchorEnd: boolean): boolean {
+export function matchTokens(input: string, tokens: string[], startPos: number, hasAnchorEnd: boolean): boolean {
     let pos = startPos;
   
     for (let j = 0; j < tokens.length; j++) {
