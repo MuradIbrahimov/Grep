@@ -56,6 +56,11 @@ export function parseAlternatives(tokens: string[], start = 0): [RegexAST, numbe
 }else if (token === "\\w") {
   elements.push({ type: "Word" });
   i++;
+}else if (token.startsWith("[") && token.endsWith("]")) {
+  const negated = token[1] === "^";
+  const chars = negated ? token.slice(2, -1) : token.slice(1, -1);
+  elements.push({ type: "CharClass", chars, negated });
+  i++;
 }
          else {
             elements.push({ type: "Literal", value: token });

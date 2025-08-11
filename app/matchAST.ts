@@ -70,8 +70,16 @@ export function matchAST(
         }
         return [];
       case "Word":
-        if (i < input.length && /[a-zA-Z0-9_]/.test(input[i])) {
+        if (i < input.length && ALPHA.includes(input[i] ) || DIGITS.includes(input[i]) ) {
             return [i + 1];
+        }
+        return [];
+      case "CharClass":
+        if (i < input.length) {
+            const match = node.negated
+            ? !node.chars.includes(input[i])
+            : node.chars.includes(input[i]);
+            if (match) return [i + 1];
         }
         return [];
       default:
