@@ -41,7 +41,11 @@ export function tokenize(pattern: string): string[] {
 
     // Check if next is '+' or '?' → create repeat token
     if (i + 1 < pattern.length && (pattern[i + 1] === "+" || pattern[i + 1] === "?")) {
-      tokens.push(pattern[i] + pattern[i + 1]);
+      if(pattern[i] === ")") {
+        tokens.push(pattern[i]);
+        tokens.push(pattern[i + 1]);
+      }
+      else tokens.push(pattern[i] + pattern[i + 1]);
       i += 2;
       continue;
     }

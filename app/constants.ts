@@ -11,3 +11,13 @@ for (let i = "A".charCodeAt(0); i <= "Z".charCodeAt(0); i++) {
   ALPHA.push(String.fromCharCode(i));
 }
 ALPHA.push("_");
+
+export type RegexAST =
+  | { type: "Sequence", elements: RegexAST[] }
+  | { type: "Alternative", options: RegexAST[] }
+  | { type: "Group", child: RegexAST }
+  | { type: "Quantifier", quant: string, child: RegexAST }
+  | { type: "Literal", value: string }
+  | { type: "Digit", }           // for \d
+  | { type: "Alpha" }          // for [a-zA-Z_]
+  | { type: "Anchor", kind: "start" | "end" };
