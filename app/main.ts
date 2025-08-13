@@ -1,17 +1,41 @@
 import * as fs from "fs";
+import * as path from "path";
 import { matchPattern } from "./patternMatcher.js";
 
 const args = process.argv;
 
-if (args[2] !== "-E") {
-  console.error("Expected first argument to be '-E'");
+if (args[2] !== "-r" && args[2] !== "-E") {
+  console.error("Expected first argument to be '-r' or '-E'");
   process.exit(1);
 }
 
-const pattern = args[3];
-const filenames = args.slice(4)
+let recursive = false;
+let patternArgIndex = 2;
+if (args[2] === "-r") {
+  recursive = true;
+  patternArgIndex = 3;
+}
+
+const pattern = args[patternArgIndex + 1];
+const paths = args.slice(patternArgIndex + 2);
 let lines: string[] = [];
 let matched = false;
+
+function getFiles(p:string):string[]{
+  let results: string[]=[];
+  const stats= fs.statSync(p);
+  if (stats.isFile()) {
+    results.push(p);
+  } else if (stats.isDirectory()) {
+   const entries = fs.readdirSync(p);
+   for (const entry of entries){
+    results.push(...getFiles(path.join(p, entry)));
+   }
+    }
+return results;
+  }
+
+
 
 function processLines(lines: string[], filename?: string) {
   for (const line of lines) {
@@ -26,7 +50,8 @@ function processLines(lines: string[], filename?: string) {
   }
 }
 
-if (filenames.length === 0) {
+
+if (paths.length === 0) {
   const stdinText = await Bun.stdin.text();
   const lines = stdinText.split("\n");
   processLines(lines);
