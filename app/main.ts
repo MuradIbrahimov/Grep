@@ -9,25 +9,32 @@ if (args[2] !== "-E") {
 }
 
 const pattern = args[3];
-const filename = args[4];
+const filenames = args.slice(4)
 let lines: string[] = [];
-
-if (filename) {
-  lines = fs.readFileSync(filename, "utf-8").split("\n");
-} else {
-  const stdinText = await Bun.stdin.text();
-  lines = stdinText.split("\n");
-}
-
 let matched = false;
 
-for (const line of lines) {
-  if (matchPattern(line, pattern)) {
-    console.log(line); 
-    matched = true;
+function processLines(lines: string[], filename?: string) {
+  for (const line of lines) {
+    if (matchPattern(line, pattern)) {
+      if (filename && filenames.length > 1) {
+        console.log(`${filename}:${line}`);
+      } else {
+        console.log(line);
+      }
+      matched = true;
+    }
   }
 }
 
-if (!matched) {
+if (filenames.length === 0) {
+  const stdinText = await Bun.stdin.text();
+  const lines = stdinText.split("\n");
+  processLines(lines);
+} else {
+  for (const filename of filenames) {
+    const lines = fs.readFileSync(filename, "utf-8").split("\n");
+    processLines(lines, filename);
+  }
 }
+
 process.exit(matched ? 0 : 1);
