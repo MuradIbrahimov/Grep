@@ -1,27 +1,33 @@
-// main.ts
-import { matchPattern } from './patternMatcher.js';
+import * as fs from "fs";
+import { matchPattern } from "./patternMatcher.js";
 
-// Parse command line arguments
 const args = process.argv;
-const pattern = args[3];
 
-// Read input from stdin
-const inputLine: string = (await Bun.stdin.text()).trim();
-
-// Validate arguments
 if (args[2] !== "-E") {
-  console.log("Expected first argument to be '-E'");
+  console.error("Expected first argument to be '-E'");
   process.exit(1);
 }
 
-console.error("Logs from your program will appear here!");
+const pattern = args[3];
+const filename = args[4];
+let lines: string[] = [];
 
-// Match pattern and exit with appropriate code
-if (matchPattern(inputLine, pattern)) {
-  console.log("Pattern matched successfully!");
-  
-  process.exit(0);
+if (filename) {
+  lines = fs.readFileSync(filename, "utf-8").split("\n");
 } else {
-  console.log("Pattern did not match.");
-  process.exit(1);
+  const stdinText = await Bun.stdin.text();
+  lines = stdinText.split("\n");
 }
+
+let matched = false;
+
+for (const line of lines) {
+  if (matchPattern(line, pattern)) {
+    console.log(line); 
+    matched = true;
+  }
+}
+
+if (!matched) {
+}
+process.exit(matched ? 0 : 1);
