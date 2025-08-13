@@ -18,7 +18,10 @@ console.error("Logs from your program will appear here!");
 
 // Match pattern and exit with appropriate code
 if (matchPattern(inputLine, pattern)) {
+  console.log("Pattern matched successfully!");
+  
   process.exit(0);
 } else {
+  console.log("Pattern did not match.");
   process.exit(1);
 }
