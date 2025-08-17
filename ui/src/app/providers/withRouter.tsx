@@ -1,8 +1,7 @@
-import React from "react";
-
 import { BrowserRouter } from "react-router-dom";
+import type { ComponentType } from "react";
 
-const withRouter = (Component) => (props) => {
+const withRouter = <T extends object>(Component: ComponentType<T>) => (props: T) => {
   return (
     <BrowserRouter>
         <Component {...props} />
