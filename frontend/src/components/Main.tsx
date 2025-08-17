@@ -11,6 +11,7 @@ const documents = useSelector((state: RootState) => state.handleDocument);
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
+
       const id =  crypto.randomUUID(); // Generate a unique ID for the document
       reader.onload = (event) => {
                 dispatch(addDocument({ id, name: file.name, content: event.target?.result as string }));

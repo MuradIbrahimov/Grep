@@ -1,5 +1,5 @@
-import { tokenize } from './tokenizer.js';
-import { parseAlternatives } from './parseAlternatives.js';
+import { tokenize } from './tokenizer';
+import { parseAlternatives } from './parseAlternatives';
 
 import { matchAST } from './matchAST.js';
 
