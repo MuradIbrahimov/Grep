@@ -135,5 +135,4 @@ function match(node: RegexAST, i: number, groups: string[]): [number, ...string[
 return positions.length > 0;
 
 }
-///aaaa
 export default matchAST;

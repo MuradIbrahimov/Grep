@@ -20,7 +20,7 @@ const Navbar:React.FC<any> = () => {
 
   return (
     <nav className="bg-slate-900 text-white shadow-lg border-b border-slate-700">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center">
@@ -57,7 +57,7 @@ const Navbar:React.FC<any> = () => {
               );
             })}
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center">
             <button 
               className="hidden md:block text-slate-300 hover:text-white transition-colors duration-200"
               title="View source on GitHub"

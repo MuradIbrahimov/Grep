@@ -3,8 +3,13 @@ interface TreeNode {
     name: string;
     children: TreeNode[];
 }
+// Retrieve initial state from localStorage if available
+const getInitialTree = () => {
+  const storedTree = localStorage.getItem("tree");
+  return storedTree ? JSON.parse(storedTree) : [];
+};
 
-const handleTree = (state: { nodes: TreeNode[] }, action: { type: string; payload: TreeNode }) => {
+const handleTree = (state: { nodes: TreeNode[] } = { nodes: getInitialTree() }, action: { type: string; payload: TreeNode }) => {
     const node = action.payload;
 
     switch (action.type) {

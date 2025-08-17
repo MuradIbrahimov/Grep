@@ -5,15 +5,19 @@ const Footer:React.FC<any> =  () => {
 
   return (
     <footer className="bg-slate-950 text-slate-400 border-t border-slate-800">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <div className="flex items-center space-x-2">
-            <img 
-              src="/regex_icon.svg" 
-              alt="RegexViz" 
-              className="w-5 h-5"
-            />
-            <span className="font-medium text-white">RegexViz</span>
+      <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row justify-between items-center ">
+      <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center">
+              <img 
+                src="/regex_icon.svg" 
+                alt="RegexLab Logo" 
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              RegexLab
+            </span>
           </div>
 
           <div className="flex items-center space-x-1 text-sm">
