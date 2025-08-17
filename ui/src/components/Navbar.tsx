@@ -1,79 +1,73 @@
 import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import { Menu, X, Code, Search, BookOpen, Github, Settings } from 'lucide-react';
 
-interface NavbarProps {
-  onNavigate?: (section: string) => void;
-  currentSection?: string;
-}
 
-const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentSection = 'visualizer' }) => {
+
+const Navbar:React.FC<any> = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
-    { id: 'visualizer', label: 'Visualizer', icon: Search },
-    { id: 'patterns', label: 'Patterns', icon: Code },
-    { id: 'docs', label: 'Docs', icon: BookOpen },
-    { id: 'settings', label: 'Settings', icon: Settings }
+    { path: '/', label: 'Visualizer', icon: Search },
+    { path: '/patterns', label: 'Patterns', icon: Code },
+    { path: '/docs', label: 'Docs', icon: BookOpen },
+    { path: '/settings', label: 'Settings', icon: Settings }
   ];
 
-  const handleNavClick = (section: string) => {
-    onNavigate?.(section);
-    setIsMenuOpen(false);
+  const handleMobileNavClick = () => {
+    setIsMenuOpen(false); 
   };
 
   return (
     <nav className="bg-slate-900 text-white shadow-lg border-b border-slate-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex-shrink-0 flex justify-between items-center space-x-2 h-16">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center space-x-2">
-                <img 
-                  src="/regex_icon.svg" 
-                  alt="RegexLab Logo" 
-                  className="w-full h-full object-contain"
-                />
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                RegexLab
-              </span>
-              </div>
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center">
+              <img 
+                src="/regex_icon.svg" 
+                alt="RegexLab Logo" 
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              RegexLab
+            </span>
+          </div>
 
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentSection === item.id;
-                
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleNavClick(item.id)}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-2 ${
+          <div className="hidden md:flex items-center space-x-4">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-2 ${
                       isActive
                         ? 'bg-slate-700 text-blue-400 border border-slate-600'
                         : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+                    }`
+                  }
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </NavLink>
+              );
+            })}
           </div>
-
-          {/* Right side stuff */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="flex items-center space-x-4">
             <button 
-              className="text-slate-300 hover:text-white transition-colors duration-200"
+              className="hidden md:block text-slate-300 hover:text-white transition-colors duration-200"
               title="View source on GitHub"
             >
               <Github className="w-5 h-5" />
             </button>
-          </div>
 
-          <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-slate-300 hover:text-white hover:bg-slate-700 transition-colors duration-200"
+              className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-slate-300 hover:text-white hover:bg-slate-700 transition-colors duration-200"
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -87,18 +81,21 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentSection = 'visualize
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleNavClick(item.id)}
-                    className={`w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 flex items-center space-x-2 ${
-                      currentSection === item.id
-                        ? 'bg-slate-700 text-blue-400 border border-slate-600'
-                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                    }`}
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    onClick={handleMobileNavClick}
+                    className={({ isActive }) =>
+                      `w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 flex items-center space-x-2 ${
+                        isActive
+                          ? 'bg-slate-700 text-blue-400 border border-slate-600'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`
+                    }
                   >
                     <Icon className="w-4 h-4" />
                     <span>{item.label}</span>
-                  </button>
+                  </NavLink>
                 );
               })}
               

@@ -1,9 +1,12 @@
-import Navbar from "../components/Navbar";
+import type { FC } from 'react';
+import { Navbar, Footer,Main } from '../components';
 
-function Home() {
+const Home: FC = () => {
   return (
     <>
       <Navbar />
+      <Main/>
+      <Footer/>
     </>
   )
 }
