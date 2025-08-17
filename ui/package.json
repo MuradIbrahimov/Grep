@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",
+    "@types/redux": "^3.6.31",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.8.1",
+    "redux": "^5.0.1",
     "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
