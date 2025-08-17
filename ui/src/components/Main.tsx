@@ -1,14 +1,19 @@
-import { useState } from "react";
-
+import { useDispatch, useSelector } from "react-redux";
+import { addDocument } from "../redux/action/index";
+import type {RootState} from "../redux/store"
 const Main = () => {
-  const [document, setDocument] = useState("");
+const dispatch = useDispatch();
+const documents = useSelector((state: RootState) => state.handleDocument);
+
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
+      const id =  crypto.randomUUID(); // Generate a unique ID for the document
       reader.onload = (event) => {
-        setDocument(event.target?.result as string);
+                dispatch(addDocument({ id, name: file.name, content: event.target?.result as string }));
       };
       reader.readAsText(file);
     }
@@ -18,7 +23,6 @@ const Main = () => {
     <main className="bg-slate-950 min-h-screen">
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* File Upload Panel */}
           <div className="bg-slate-900 p-6 rounded-lg shadow-lg border border-slate-800">
             <h2 className="text-xl font-semibold text-white mb-4">Upload Document</h2>
             
@@ -47,14 +51,12 @@ const Main = () => {
               <textarea
                 className="w-full p-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 rows={12}
-                value={document}
+                value={documents[documents.length - 1]?.content}
                 readOnly
                 placeholder="Document content will appear here..."
               />
             </div>
           </div>
-
-          {/* Regex Input Panel */}
           <div className="bg-slate-900 p-6 rounded-lg shadow-lg border border-slate-800">
             <h2 className="text-xl font-semibold text-white mb-4">Regex Pattern</h2>
             
@@ -80,8 +82,6 @@ const Main = () => {
               Test Pattern
             </button>
           </div>
-
-          {/* Results Panel */}
           <div className="bg-slate-900 p-6 rounded-lg shadow-lg border border-slate-800">
             <h2 className="text-xl font-semibold text-white mb-4">Results</h2>
             

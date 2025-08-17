@@ -1,4 +1,4 @@
-interface DocumentState{
+export type DocumentState = {
     id:string
     name:string
     content:string
@@ -6,7 +6,7 @@ interface DocumentState{
 
 const initialState: DocumentState[] = [];
 
-const documentSlice = (state = initialState, action: { type: string; payload: DocumentState }) => {
+const handleDocument = (state = initialState, action: { type: string; payload: DocumentState }) => {
     switch (action.type) {
         case 'ADD_DOCUMENT':
             return [...state, action.payload];
@@ -16,3 +16,4 @@ const documentSlice = (state = initialState, action: { type: string; payload: Do
             return state;
     }
 };
+export default handleDocument;

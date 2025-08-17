@@ -15,3 +15,33 @@
 
 @import "tailwindcss";
 
+
+
+/* Backgrounds */
+bg-slate-950  /* Main app background */
+bg-slate-900  /* Cards, panels, navbar */
+bg-slate-800  /* Input fields, secondary panels */
+
+/* Borders */
+border-slate-800  /* Main borders */
+border-slate-700  /* Input borders, secondary borders */
+
+/* Text */
+text-white       /* Primary headings */
+text-slate-300   /* Secondary text, labels */
+text-slate-400   /* Muted text, placeholders */
+text-slate-500   /* Very muted text */
+
+/* Gradients & Accents */
+from-blue-400 to-purple-500    /* Brand gradient */
+from-blue-600 to-purple-600    /* Button gradient */
+
+/* Interactive States */
+hover:bg-slate-800   /* Button/card hover */
+hover:bg-slate-700   /* Input hover */
+focus:ring-blue-500  /* Focus rings */
+
+/* Status Colors */
+text-red-500      /* Errors, heart icon */
+text-emerald-500  /* Success states */
+text-amber-500    /* Warnings */
