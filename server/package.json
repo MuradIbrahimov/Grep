@@ -3,13 +3,17 @@
   "description": "Building my own Regex engine, Grep",
   "type": "module",
   "scripts": {
-    "dev": "bun run app/main.ts"
+    "dev": "bun run api/server.ts"
   },
   "devDependencies": {
     "@types/bun": "^1.2.20",
-    "@types/node": "^24.2.1"
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.3.0"
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
     "lucide-react": "^0.539.0"
   }
 }

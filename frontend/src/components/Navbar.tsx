@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Menu, X, Code, Search, BookOpen, Github, Settings } from 'lucide-react';
+import { Menu, X, Code, Search, BookOpen, Github, Settings, Check } from 'lucide-react';
 
 
 
@@ -8,10 +8,11 @@ const Navbar:React.FC<any> = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
-    { path: '/', label: 'Visualizer', icon: Search },
-    { path: '/patterns', label: 'Patterns', icon: Code },
-    { path: '/docs', label: 'Docs', icon: BookOpen },
-    { path: '/settings', label: 'Settings', icon: Settings }
+    { path: '/', label: 'Matcher', icon: Check, isActive: true },
+    { path: '/visualizer', label: 'Visualizer', icon: Search, isActive: false },
+    { path: '/patterns', label: 'Patterns', icon: Code, isActive: false },
+    { path: '/docs', label: 'Docs', icon: BookOpen, isActive: false },
+    { path: '/settings', label: 'Settings', icon: Settings, isActive: false }
   ];
 
   const handleMobileNavClick = () => {
@@ -38,17 +39,18 @@ const Navbar:React.FC<any> = () => {
           <div className="hidden md:flex items-center space-x-4">
             {navItems.map((item) => {
               const Icon = item.icon;
-              
+              const isDisabled = !item.isActive; 
               return (
                 <NavLink
                   key={item.path}
                   to={item.path}
+
                   className={({ isActive }) =>
                     `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-2 ${
                       isActive
                         ? 'bg-slate-700 text-blue-400 border border-slate-600'
                         : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                    }`
+                    } ${isDisabled ? 'cursor-not-allowed opacity-50 pointer-events-none' : ''}`
                   }
                 >
                   <Icon className="w-4 h-4" />
