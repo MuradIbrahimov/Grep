@@ -6,10 +6,10 @@ import { matchAST } from '../../../../../server/engine/matchAST';
 export function matchPattern(input: string, pattern: string): boolean {
   try {
     const tokens = tokenize(pattern);
-    console.log("Tokens:", tokens);
+   // console.log("Tokens:", tokens);
     
     const [ast] = parseAlternatives(tokens);
-    console.dir(ast, { depth: null });
+   // console.dir(ast, { depth: null });
     
     let hasAnchorStart = false;
     let hasAnchorEnd = false;

@@ -5,7 +5,7 @@ import { matchPattern } from "./patternMatcher.js";
 const args = process.argv;
 
 if (args[2] !== "-r" && args[2] !== "-E") {
-  console.error("Expected first argument to be '-r' or '-E'");
+//console.error("Expected first argument to be '-r' or '-E'");
   process.exit(1);
 }
 
@@ -26,7 +26,7 @@ if (paths.length === 0) {
   let matched = false;
   for (const line of lines) {
     if (matchPattern(line, pattern)) {
-      console.log(line);
+   //   console.log(line);
       matched = true;
     }
   }
@@ -63,9 +63,9 @@ function processLines(lines: string[], filenames: string) {
   for (const line of lines) {
     if (matchPattern(line, pattern)) {
       if (allFiles.length > 1) {        
-        console.log(`${filenames}:${line}`);
+      //  console.log(`${filenames}:${line}`);
       } else {
-        console.log(line);
+       // console.log(line);
       }
       matched = true;
     }
