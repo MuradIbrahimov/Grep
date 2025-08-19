@@ -47,6 +47,7 @@ function match(node: RegexAST, i: number, groups: string[]): [number, ...string[
         if (positions.length === 0) break;
       }
       return positions;
+    
       case "Alternative":
         return node.options.flatMap(opt => match(opt, i ,groups));
       case "Group": {
