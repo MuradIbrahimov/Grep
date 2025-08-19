@@ -5,7 +5,7 @@ import { matchAST } from './matchAST.js';
 
 export function matchPattern(input: string, pattern: string): boolean {
   const tokens = tokenize(pattern);
-  //console.log("Tokens:", tokens);
+  console.log("Tokens:", tokens);
   
   const [ast] = parseAlternatives(tokens);
  // console.dir(ast, { depth: null });

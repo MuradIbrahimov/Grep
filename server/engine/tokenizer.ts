@@ -21,7 +21,6 @@ export function tokenize(pattern: string): string[] {
       i += 2;
       continue;
     }
-
     if (pattern[i] === "[" && i + 1 < pattern.length) {
       let j = i + 1;
       while (j < pattern.length && pattern[j] !== "]") j++;
@@ -39,7 +38,7 @@ export function tokenize(pattern: string): string[] {
       i++;
       continue;
     }
-
+ 
     if ((pattern[i] === "+" || pattern[i] === "?") && tokens.length > 0 && tokens[tokens.length - 1] === ")") {
       tokens.push(pattern[i]);
       i++;
@@ -49,16 +48,7 @@ export function tokenize(pattern: string): string[] {
       tokens.push(pattern[i] + pattern[i + 1]);
       i += 2;
       continue;
-    }
-
-if (
-  (ALPHA.includes(pattern[i]) || DIGITS.includes(pattern[i]) || pattern[i] === "_") &&
-  (pattern[i + 1] === "+" || pattern[i + 1] === "?")
-) {
-  tokens.push(pattern[i] + pattern[i + 1]);
-  i += 2;
-  continue;
-}
+    } 
 
 if (ALPHA.includes(pattern[i]) || DIGITS.includes(pattern[i]) || pattern[i] === "_") {
   tokens.push(pattern[i]);
