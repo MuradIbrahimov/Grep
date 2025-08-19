@@ -1,1 +1,145 @@
-carrot
+Sample Test Document for Regex Pattern Matching
+=====================================================
+
+Email Addresses:
+john.doe@example.com
+jane.smith@gmail.com
+admin@company.org
+user123@test-site.net
+invalid.email@
+@missing-domain.com
+no-at-symbol.com
+
+Phone Numbers:
+123-456-7890
+(555) 123-4567
+555.123.4567
+5551234567
++1-555-123-4567
+123-45-6789 (SSN format)
+
+URLs:
+https://www.example.com
+http://test.org
+ftp://files.company.com/path
+www.no-protocol.com
+invalid://broken-url
+
+IP Addresses:
+192.168.1.1
+10.0.0.1
+255.255.255.255
+300.400.500.600 (invalid)
+172.16.254.1
+
+Dates:
+2024-01-15
+01/15/2024
+15-01-2024
+Jan 15, 2024
+15 January 2024
+2024/01/15
+
+Times:
+14:30:25
+2:30 PM
+02:30:25 AM
+25:30:00 (invalid)
+
+Credit Cards:
+4532-1234-5678-9012 (Visa)
+5555-1234-5678-9012 (MasterCard)
+3400-123456-78901 (Amex)
+1234-5678-9012-3456 (Generic)
+
+HTML Tags:
+<html>
+<body class="main">
+<div id="content">
+<p>This is a paragraph</p>
+<img src="image.jpg" alt="description" />
+<a href="https://example.com">Link</a>
+</div>
+</body>
+</html>
+
+Programming Code:
+function calculateSum(a, b) {
+    return a + b;
+}
+
+var userEmail = "test@example.com";
+const API_KEY = "abc123xyz789";
+let counter = 0;
+
+if (condition) {
+    console.log("Hello World");
+}
+
+Log Entries:
+[2024-01-15 14:30:25] INFO: Application started
+[2024-01-15 14:30:26] DEBUG: Loading configuration
+[2024-01-15 14:30:27] ERROR: Database connection failed
+[2024-01-15 14:30:28] WARN: Retrying connection
+[2024-01-15 14:30:29] INFO: Connection established
+
+File Paths:
+/home/user/documents/file.txt
+C:\Windows\System32\config.ini
+../relative/path/to/file.log
+./current/directory/script.js
+~/user/home/document.pdf
+
+SQL Queries:
+SELECT * FROM users WHERE age > 18;
+INSERT INTO products (name, price) VALUES ('Widget', 19.99);
+UPDATE customers SET email = 'new@email.com' WHERE id = 1;
+DELETE FROM orders WHERE status = 'cancelled';
+
+Numbers and Measurements:
+42
+3.14159
+-17.5
+1,234,567
+$19.99
+€25.50
+£12.75
+100%
+50.5kg
+30.2cm
+180°
+
+Special Characters and Unicode:
+café
+naïve
+résumé
+Москва
+東京
+🎉 🚀 💻 📱
+@#$%^&*()
+!@#$%^&*()_+
+{}[]|\\:";'<>?,.
+`~
+
+Words and Text:
+The quick brown fox jumps over the lazy dog.
+UPPERCASE TEXT
+lowercase text
+MiXeD cAsE tExT
+Numbers123Mixed456With789Text
+CamelCaseExample
+snake_case_example
+kebab-case-example
+PascalCaseExample
+
+Empty Lines:
+
+
+Whitespace:
+	Tab character
+    Four spaces
+ Single space
+		Multiple tabs
+    	Mixed tabs and spaces
+
+End of test document.

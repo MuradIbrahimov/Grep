@@ -1,4 +1,3 @@
-import { log } from 'node:console';
 import { ALPHA, DIGITS } from './constants.js';
 
 export function tokenize(pattern: string): string[] {

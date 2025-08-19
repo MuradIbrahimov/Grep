@@ -10,8 +10,6 @@ const getInitialTree = () => {
 };
 
 const handleTree = (state: { nodes: TreeNode[] } = { nodes: getInitialTree() }, action: { type: string; payload: TreeNode }) => {
-    const node = action.payload;
-
     switch (action.type) {
         case "ADD_NODE":
             return {

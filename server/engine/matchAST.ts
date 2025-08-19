@@ -29,7 +29,6 @@ export function matchAST(
   ast: RegexAST,
   pos: number,
   hasAnchorEnd: boolean,
-  groups: string[] = []
 ): boolean {
  const totalGroups = assignGroupIndices(ast);
 const positions = match(ast, pos, new Array(totalGroups + 1).fill("")); 
