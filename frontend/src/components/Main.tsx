@@ -231,9 +231,8 @@ const Main = () => {
             <div className="mb-6 p-3 bg-slate-800 rounded border border-slate-700">
               <h3 className="text-sm font-medium text-slate-300 mb-2">🚀 Engine Status</h3>
               <div className="text-sm text-slate-400 space-y-1">
-                <p>✅ Using your custom pattern matcher</p>
+                <p>✅ Using custom pattern matcher</p>
                 <p>⚡ Client-side processing (no server needed)</p>
-                <p>🔧 Add flags support when your engine is ready</p>
               </div>
             </div>
 
