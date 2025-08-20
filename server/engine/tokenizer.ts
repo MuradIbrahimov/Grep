@@ -50,11 +50,11 @@ export function tokenize(pattern: string): string[] {
       continue;
     } 
 
-if (ALPHA.includes(pattern[i]) || DIGITS.includes(pattern[i]) || pattern[i] === "_") {
-  tokens.push(pattern[i]);
-  i++;
-  continue;
-}
+    if (ALPHA.includes(pattern[i]) || DIGITS.includes(pattern[i]) || pattern[i] === "_") {
+      tokens.push(pattern[i]);
+      i++;
+      continue;
+    }
 
     tokens.push(pattern[i]);
     i++;
