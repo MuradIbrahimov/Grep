@@ -1,4 +1,4 @@
-import React, { useState, useEffect, type JSX } from 'react';
+import React, { useState, type JSX } from 'react';
 import { ChevronDown, ChevronRight, Code, Eye, Copy } from 'lucide-react';
 
 // Your exact AST node types
@@ -78,8 +78,6 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   node, 
   level = 0, 
   path = [],
-  parentWidth = 0,
-  xOffset = 0
 }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
   const config = nodeConfig[node.type] || { 
@@ -178,7 +176,6 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   // Calculate positioning for vertical tree
   const nodeWidth = 280; // Fixed width for each node
   const horizontalSpacing = 320; // Space between siblings
-  const verticalSpacing = 120; // Space between levels
 
   return (
     <div className="relative inline-block">
