@@ -9,7 +9,7 @@ export function matchPattern(input: string, pattern: string): boolean {
    // console.log("Tokens:", tokens);
     
     const [ast] = parseAlternatives(tokens);
-   // console.dir(ast, { depth: null });
+    console.dir(ast, { depth: null });
     
     let hasAnchorStart = false;
     let hasAnchorEnd = false;
