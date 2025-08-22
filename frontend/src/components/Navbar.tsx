@@ -9,7 +9,7 @@ const Navbar:React.FC<any> = () => {
 
   const navItems = [
     { path: '/', label: 'Matcher', icon: Check, isActive: true },
-    { path: '/visualizer', label: 'Visualizer', icon: Search, isActive: false },
+    { path: '/visualizer', label: 'Visualizer', icon: Search, isActive: true },
     { path: '/patterns', label: 'Patterns', icon: Code, isActive: true },
     { path: '/docs', label: 'Docs', icon: BookOpen, isActive: false },
     { path: '/settings', label: 'Settings', icon: Settings, isActive: false }

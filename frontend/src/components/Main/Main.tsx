@@ -1,9 +1,9 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
-import { addDocument } from "../redux/action/index";
-import type { RootState } from "../redux/store";
-import { matchPattern } from "../shared/lib/utils/patternMatcher"; 
-import defaultTestContent from "../../../testFiles/test.txt?raw";
+import { addDocument } from "../../redux/action/index";
+import type { RootState } from "../../redux/store";
+import { matchPattern } from "../../shared/lib/utils/patternMatcher"; 
+import defaultTestContent from "../../../../testFiles/test.txt?raw";
 interface MatchResult {
   matches: Array<{
     text: string;
