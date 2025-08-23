@@ -1,7 +1,15 @@
+import type { RegexAST } from "../../../../server/engine/constants";
+
 interface TreeNode {
-    id: string;
-    name: string;
-    children: TreeNode[];
+    // Current active data
+  pattern: string;
+  tokens: string[] | null;
+  ast: RegexAST | null;
+  
+  // UI state
+  isLoading: boolean;
+  error: string | null;
+  
 }
 // Retrieve initial state from localStorage if available
 const getInitialTree = () => {
@@ -11,15 +19,35 @@ const getInitialTree = () => {
 
 const handleTree = (state: { nodes: TreeNode[] } = { nodes: getInitialTree() }, action: { type: string; payload: TreeNode }) => {
     switch (action.type) {
-        case "ADD_NODE":
+        case "SET_PATTERN":
             return {
                 ...state,
-                nodes: [...state.nodes, action.payload],
+                pattern: action.payload.pattern,
             };
-        case "REMOVE_NODE":
+         case "SET_TOKENS":
             return {
                 ...state,
-                nodes: state.nodes.filter(node => node.id !== action.payload.id),
+                tokens: action.payload.tokens,
+            };
+              case "SET_AST":
+            return {
+                ...state,
+                ast: action.payload.ast,
+            };
+              case "SET_LOADING":
+            return {
+                ...state,
+                isLoading: action.payload.isLoading,
+            };
+            case "SET_ERROR":
+            return {
+                ...state,
+                error: action.payload.error,
+            };
+            case "CLEAR_ERROR":
+            return {
+                ...state,
+                error: null,
             };
         default:
             return state;

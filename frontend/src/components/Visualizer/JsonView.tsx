@@ -9,7 +9,6 @@ interface JsonViewProps {
   title: string;
 }
 
-// JSON View Component
 const JsonView: React.FC<JsonViewProps> = ({ data, title }) => {
   const [copied, setCopied] = useState<boolean>(false);
   
