@@ -1,11 +1,10 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useState, useMemo } from "react";
-import { addDocument } from "../../redux/action/index";
+import { useState } from "react";
+import { addDocument, updatePattern } from "../../redux/action/index";
 import type { RootState } from "../../redux/store";
 import { matchPattern } from "../../shared/lib/utils/patternMatcher"; 
 import defaultTestContent from "../../../../testFiles/test.txt?raw";
-import { tokenize } from "../../../../server/engine/tokenizer";
-import { parseAlternatives } from "../../../../server/engine/parseAlternatives";
+
 interface MatchResult {
   matches: Array<{
     text: string;
@@ -17,11 +16,18 @@ interface MatchResult {
   error?: string;
 }
 
-
 const Main = () => {
   const dispatch = useDispatch();
   const documents = useSelector((state: RootState) => state.handleDocument);
-  const [pattern, setPattern] = useState("");
+  
+  // Get pattern-related state from Redux instead of local useMemo
+  const { pattern, tokens, ast, error } = useSelector((state: RootState) => ({
+    pattern: state.handleTree?.pattern || "",
+    tokens: state.handleTree?.tokens,
+    ast: state.handleTree?.ast,
+    error: state.handleTree?.error
+  }));
+  
   const [results, setResults] = useState<MatchResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -41,75 +47,53 @@ const Main = () => {
     }
   };
 
- const handleLoadExample = () => {
-  const id = crypto.randomUUID();
-  dispatch(
-    addDocument({
-      id,
-      name: "test.txt", // hardcoded since it's not a real File
-      content: defaultTestContent,
-    })
-  );
-};
+  const handleLoadExample = () => {
+    const id = crypto.randomUUID();
+    dispatch(
+      addDocument({
+        id,
+        name: "test.txt",
+        content: defaultTestContent,
+      })
+    );
+  };
 
-const { tokens, ast, patternError } = useMemo(() => {
-  if (!pattern.trim()) {
-    return { tokens: null, ast: null, patternError: null };
-  }
+  // Use the Redux action instead of local state
+  const handlePatternChange = (value: string) => {
+    dispatch(updatePattern(value));
+  };
 
-  try {
-    const t = tokenize(pattern);
-    const [a] = parseAlternatives(t);
+  const processMatches = (content: string): MatchResult => {
+    if (!tokens || !ast) {
+      return { matches: [], totalMatches: 0, success: false, error: "No valid pattern" };
+    }
 
-    // validate pattern once
-    matchPattern("", t, a);
+    try {
+      const lines = content.split("\n");
+      const matches: any[] = [];
+      let totalMatches = 0;
 
-    return { tokens: t, ast: a, patternError: null };
-  } catch (err) {
-    return {
-      tokens: null,
-      ast: null,
-      patternError: err instanceof Error ? err.message : "Invalid pattern",
-    };
-  }
-}, [pattern]);
+      lines.forEach((line, lineIndex) => {
+        if (matchPattern(line, tokens, ast)) {
+          matches.push({
+            text: line.trim(),
+            line: lineIndex + 1,
+            matchedPortion: line.trim(),
+          });
+          totalMatches++;
+        }
+      });
 
- const handlePatternChange = (value: string) => {
-  setPattern(value);
-};
-
-const processMatches = (content: string): MatchResult => {
-  if (!tokens || !ast) {
-    return { matches: [], totalMatches: 0, success: false, error: "No valid pattern" };
-  }
-
-  try {
-    const lines = content.split("\n");
-    const matches: any[] = [];
-    let totalMatches = 0;
-
-    lines.forEach((line, lineIndex) => {
-      if (matchPattern(line, tokens, ast)) {
-        matches.push({
-          text: line.trim(),
-          line: lineIndex + 1,
-          matchedPortion: line.trim(),
-        });
-        totalMatches++;
-      }
-    });
-
-    return { matches, totalMatches, success: true };
-  } catch (error) {
-    return {
-      matches: [],
-      totalMatches: 0,
-      success: false,
-      error: error instanceof Error ? error.message : "Pattern matching failed",
-    };
-  }
-};
-
+      return { matches, totalMatches, success: true };
+    } catch (error) {
+      return {
+        matches: [],
+        totalMatches: 0,
+        success: false,
+        error: error instanceof Error ? error.message : "Pattern matching failed",
+      };
+    }
+  };
 
   const testPattern = () => {
     const currentDoc = documents[documents.length - 1];
@@ -220,21 +204,21 @@ const processMatches = (content: string): MatchResult => {
                 value={pattern}
                 onChange={(e) => handlePatternChange(e.target.value)}
                 className={`w-full p-3 bg-slate-800 border rounded-lg text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 font-mono ${
-                  patternError 
+                  error 
                     ? 'border-red-500 focus:ring-red-500' 
                     : 'border-slate-700 focus:ring-blue-500'
                 } focus:border-transparent`}
                 placeholder="Enter your custom pattern..."
               />
               
-            {patternError && (
+            {error && (
             <p className="mt-2 text-sm text-red-400 flex items-center space-x-1">
               <span>⚠️</span>
-              <span>{patternError}</span>
+              <span>{error}</span>
             </p>
           )}
 
-          {!patternError && pattern && (
+          {!error && pattern && (
             <p className="mt-2 text-sm text-emerald-400 flex items-center space-x-1">
               <span>✅</span>
               <span>Pattern looks valid</span>
@@ -253,7 +237,7 @@ const processMatches = (content: string): MatchResult => {
 
             <button 
               onClick={testPattern}
-              disabled={isProcessing || !!patternError || !pattern.trim() || !currentDocument}
+              disabled={isProcessing || !!error || !pattern.trim() || !currentDocument}
               className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               {isProcessing ? (

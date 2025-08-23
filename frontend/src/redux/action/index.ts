@@ -3,38 +3,50 @@ import { parseAlternatives } from "../../../../server/engine/parseAlternatives";
 import { matchPattern } from "../../shared/lib/utils/patternMatcher";
 import type { DocumentState } from "../reducer/handleDocument";
 
-
 export const addDocument = (document: DocumentState) => ({
     type: 'ADD_DOCUMENT',
     payload: document
 });
 
-export const updatePattern = (pattern: string) => (dispatch: any) => {
-  dispatch({ type: "SET_PATTERN", payload: pattern });
-
+// Convert thunk to simple action by processing the pattern here
+export const updatePattern = (pattern: string) => {
   if (!pattern.trim()) {
-    dispatch({ type: "SET_TOKEN", payload: null });
-    dispatch({ type: "SET_AST", payload: null });
-    dispatch({ type: "CLEAR_ERROR" });
-    return;
+    return {
+      type: "UPDATE_PATTERN",
+      payload: {
+        pattern,
+        tokens: null,
+        ast: null,
+        error: null
+      }
+    };
   }
 
   try {
     const tokens = tokenize(pattern);
     const [ast] = parseAlternatives(tokens);
-
-    // validate
+    
+    // Validate pattern once
     matchPattern("", tokens, ast);
 
-    dispatch({ type: "SET_TOKEN", payload: tokens });
-    dispatch({ type: "SET_AST", payload: ast });
-    dispatch({ type: "CLEAR_ERROR" });
+    return {
+      type: "UPDATE_PATTERN",
+      payload: {
+        pattern,
+        tokens,
+        ast,
+        error: null
+      }
+    };
   } catch (err) {
-    dispatch({ type: "SET_TOKEN", payload: null });
-    dispatch({ type: "SET_AST", payload: null });
-    dispatch({
-      type: "SET_ERROR",
-      payload: err instanceof Error ? err.message : "Invalid pattern",
-    });
+    return {
+      type: "UPDATE_PATTERN",
+      payload: {
+        pattern,
+        tokens: null,
+        ast: null,
+        error: err instanceof Error ? err.message : "Invalid pattern"
+      }
+    };
   }
 };
