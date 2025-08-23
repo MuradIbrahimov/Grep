@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { addDocument } from "../../redux/action/index";
 import type { RootState } from "../../redux/store";
 import { matchPattern } from "../../shared/lib/utils/patternMatcher"; 
@@ -17,13 +17,13 @@ interface MatchResult {
   error?: string;
 }
 
+
 const Main = () => {
   const dispatch = useDispatch();
   const documents = useSelector((state: RootState) => state.handleDocument);
   const [pattern, setPattern] = useState("");
   const [results, setResults] = useState<MatchResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [patternError, setPatternError] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -52,56 +52,64 @@ const Main = () => {
   );
 };
 
+const { tokens, ast, patternError } = useMemo(() => {
+  if (!pattern.trim()) {
+    return { tokens: null, ast: null, patternError: null };
+  }
 
-  const handlePatternChange = (value: string) => {
-    const tokens = tokenize(value);
-    const [ast] = parseAlternatives(tokens);
-    setPattern(() => value);
-    setPatternError(null);
-    if (value.trim()) {
-      try {
-        matchPattern('', tokens, ast);
-      } catch (error) {
-        setPatternError(error instanceof Error ? error.message : 'Invalid pattern');
+  try {
+    const t = tokenize(pattern);
+    const [a] = parseAlternatives(t);
+
+    // validate pattern once
+    matchPattern("", t, a);
+
+    return { tokens: t, ast: a, patternError: null };
+  } catch (err) {
+    return {
+      tokens: null,
+      ast: null,
+      patternError: err instanceof Error ? err.message : "Invalid pattern",
+    };
+  }
+}, [pattern]);
+
+ const handlePatternChange = (value: string) => {
+  setPattern(value);
+};
+
+const processMatches = (content: string): MatchResult => {
+  if (!tokens || !ast) {
+    return { matches: [], totalMatches: 0, success: false, error: "No valid pattern" };
+  }
+
+  try {
+    const lines = content.split("\n");
+    const matches: any[] = [];
+    let totalMatches = 0;
+
+    lines.forEach((line, lineIndex) => {
+      if (matchPattern(line, tokens, ast)) {
+        matches.push({
+          text: line.trim(),
+          line: lineIndex + 1,
+          matchedPortion: line.trim(),
+        });
+        totalMatches++;
       }
-    }
-  };
+    });
 
-  const processMatches = (content: string, pattern: string): MatchResult => {
-    try {
-      const tokens = tokenize(pattern);
-      const [ast] = parseAlternatives(tokens);
-      console.dir(ast, { depth: null });
+    return { matches, totalMatches, success: true };
+  } catch (error) {
+    return {
+      matches: [],
+      totalMatches: 0,
+      success: false,
+      error: error instanceof Error ? error.message : "Pattern matching failed",
+    };
+  }
+};
 
-      const lines = content.split('\n');
-      const matches: any[] = [];
-      let totalMatches = 0;
-
-      lines.forEach((line, lineIndex) => {
-        if (matchPattern(line, tokens, ast  )) {
-          matches.push({
-            text: line.trim(),
-            line: lineIndex + 1,
-            matchedPortion: line.trim() 
-          });
-          totalMatches++;
-        }
-      });
-
-      return {
-        matches,
-        totalMatches,
-        success: true
-      };
-    } catch (error) {
-      return {
-        matches: [],
-        totalMatches: 0,
-        success: false,
-        error: error instanceof Error ? error.message : 'Pattern matching failed'
-      };
-    }
-  };
 
   const testPattern = () => {
     const currentDoc = documents[documents.length - 1];
@@ -121,7 +129,7 @@ const Main = () => {
 
     setTimeout(() => {
       try {
-        const result = processMatches(currentDoc.content, pattern.trim());
+        const result = processMatches(currentDoc.content);
         setResults(result);
       } catch (error) {
         setResults({
@@ -219,19 +227,20 @@ const Main = () => {
                 placeholder="Enter your custom pattern..."
               />
               
-              {patternError && (
-                <p className="mt-2 text-sm text-red-400 flex items-center space-x-1">
-                  <span>⚠️</span>
-                  <span>{patternError}</span>
-                </p>
-              )}
-              
-              {!patternError && pattern && (
-                <p className="mt-2 text-sm text-emerald-400 flex items-center space-x-1">
-                  <span>✅</span>
-                  <span>Pattern looks valid</span>
-                </p>
-              )}
+            {patternError && (
+            <p className="mt-2 text-sm text-red-400 flex items-center space-x-1">
+              <span>⚠️</span>
+              <span>{patternError}</span>
+            </p>
+          )}
+
+          {!patternError && pattern && (
+            <p className="mt-2 text-sm text-emerald-400 flex items-center space-x-1">
+              <span>✅</span>
+              <span>Pattern looks valid</span>
+            </p>
+          )}
+
             </div>
             
             <div className="mb-6 p-3 bg-slate-800 rounded border border-slate-700">
