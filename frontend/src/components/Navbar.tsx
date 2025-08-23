@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Menu, X, Code, Search, BookOpen, Github, Settings, Check } from 'lucide-react';
+import { Menu, X, Code, Search, Github, Check } from 'lucide-react';
 
 
 
@@ -11,8 +11,7 @@ const Navbar:React.FC<any> = () => {
     { path: '/', label: 'Matcher', icon: Check, isActive: true },
     { path: '/visualizer', label: 'Visualizer', icon: Search, isActive: true },
     { path: '/patterns', label: 'Patterns', icon: Code, isActive: true },
-    { path: '/docs', label: 'Docs', icon: BookOpen, isActive: false },
-    { path: '/settings', label: 'Settings', icon: Settings, isActive: false }
+
   ];
 
   const handleMobileNavClick = () => {
