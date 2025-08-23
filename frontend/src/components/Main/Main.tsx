@@ -4,6 +4,8 @@ import { addDocument } from "../../redux/action/index";
 import type { RootState } from "../../redux/store";
 import { matchPattern } from "../../shared/lib/utils/patternMatcher"; 
 import defaultTestContent from "../../../../testFiles/test.txt?raw";
+import { tokenize } from "../../../../server/engine/tokenizer";
+import { parseAlternatives } from "../../../../server/engine/parseAlternatives";
 interface MatchResult {
   matches: Array<{
     text: string;
@@ -18,7 +20,6 @@ interface MatchResult {
 const Main = () => {
   const dispatch = useDispatch();
   const documents = useSelector((state: RootState) => state.handleDocument);
-  
   const [pattern, setPattern] = useState("");
   const [results, setResults] = useState<MatchResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -53,12 +54,13 @@ const Main = () => {
 
 
   const handlePatternChange = (value: string) => {
-    setPattern(value);
+    const tokens = tokenize(value);
+    const [ast] = parseAlternatives(tokens);
+    setPattern(() => value);
     setPatternError(null);
-
     if (value.trim()) {
       try {
-        matchPattern('', value);
+        matchPattern('', tokens, ast);
       } catch (error) {
         setPatternError(error instanceof Error ? error.message : 'Invalid pattern');
       }
@@ -67,12 +69,16 @@ const Main = () => {
 
   const processMatches = (content: string, pattern: string): MatchResult => {
     try {
+      const tokens = tokenize(pattern);
+      const [ast] = parseAlternatives(tokens);
+      console.dir(ast, { depth: null });
+
       const lines = content.split('\n');
       const matches: any[] = [];
       let totalMatches = 0;
 
       lines.forEach((line, lineIndex) => {
-        if (matchPattern(line, pattern)) {
+        if (matchPattern(line, tokens, ast  )) {
           matches.push({
             text: line.trim(),
             line: lineIndex + 1,
