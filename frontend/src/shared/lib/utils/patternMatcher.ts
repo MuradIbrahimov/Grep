@@ -1,15 +1,8 @@
-
-import { tokenize } from '../../../../../server/engine/tokenizer';
-import { parseAlternatives } from '../../../../../server/engine/parseAlternatives';
 import { matchAST } from '../../../../../server/engine/matchAST';
+import type { RegexAST } from '../../../../../server/engine/constants';
 
-export function matchPattern(input: string, pattern: string): boolean {
+export function matchPattern(input: string, tokens: string[], ast: RegexAST): boolean {
   try {
-    const tokens = tokenize(pattern);
-   // console.log("Tokens:", tokens);
-    
-    const [ast] = parseAlternatives(tokens);
-    console.dir(ast, { depth: null });
     
     let hasAnchorStart = false;
     let hasAnchorEnd = false;
