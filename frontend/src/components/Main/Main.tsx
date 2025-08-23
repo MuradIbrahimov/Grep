@@ -20,7 +20,6 @@ const Main = () => {
   const dispatch = useDispatch();
   const documents = useSelector((state: RootState) => state.handleDocument);
   
-  // Get pattern-related state from Redux instead of local useMemo
   const { pattern, tokens, ast, error } = useSelector((state: RootState) => ({
     pattern: state.handleTree?.pattern || "",
     tokens: state.handleTree?.tokens,
@@ -58,7 +57,6 @@ const Main = () => {
     );
   };
 
-  // Use the Redux action instead of local state
   const handlePatternChange = (value: string) => {
     dispatch(updatePattern(value));
   };

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import {Code, Eye } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { createSelector } from 'reselect';
+import type { RootState } from '../../redux/store';
 import JsonView from './JsonView';
 import TreeNode, { nodeConfig, type NodeConfig } from './TreeNode';
 
-// Your exact AST node types
 export type RegexAST =
   | { type: "Sequence", elements: RegexAST[] }
   | { type: "Alternative", options: RegexAST[] }
@@ -18,7 +20,6 @@ export type RegexAST =
   | { type: "CharClass", chars: string, negated?: boolean }
   | { type: "BackReference", index: number };
 
-// Sample AST data using your structure
 const sampleAST: RegexAST = {
   type: "Sequence",
   elements: [
@@ -54,12 +55,10 @@ interface ASTStatistics {
   alternatives: number;
 }
 
-// Props for ASTStats component
 interface ASTStatsProps {
   ast: RegexAST;
 }
 
-// Statistics Component
 const ASTStats: React.FC<ASTStatsProps> = ({ ast }) => {
   const calculateStats = (node: RegexAST): ASTStatistics => {
     const stats: ASTStatistics = {
@@ -173,7 +172,6 @@ interface TabConfig {
   icon: string | React.ComponentType<{ size: number }>;
 }
 
-// Pattern examples for your AST structure
 const examplePatterns: Array<{pattern: string, ast: RegexAST, description: string}> = [
   {
     pattern: "\\w+",
@@ -213,18 +211,36 @@ const examplePatterns: Array<{pattern: string, ast: RegexAST, description: strin
   }
 ];
 
-// Main Visualizer Component
+const selectPatternData = createSelector(
+  (state: RootState) => state.handleTree,
+  (handleTree) => ({
+    pattern: handleTree?.pattern || "",
+    tokens: handleTree?.tokens,
+    ast: handleTree?.ast,
+    error: handleTree?.error
+  })
+);
+
 const RegexASTVisualizer: React.FC = () => {
-  const [astData, setAstData] = useState<RegexAST>(sampleAST);
+  // Get pattern data from Redux (same as your Main component)
+  const { pattern, ast, error } = useSelector(selectPatternData);
+  
+  // Local state for fallback/manual mode
+  const [manualMode, setManualMode] = useState<boolean>(false);
+  const [manualAstData, setManualAstData] = useState<RegexAST>(sampleAST);
   const [inputJson, setInputJson] = useState<string>(JSON.stringify(sampleAST, null, 2));
   const [parseError, setParseError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('tree');
+
+  // Determine which AST to display
+  const currentAST = manualMode ? manualAstData : (ast || sampleAST);
+  const hasValidPattern = !manualMode && pattern.trim() && !error && ast;
 
   const handleJsonChange = (value: string): void => {
     setInputJson(value);
     try {
       const parsed = JSON.parse(value) as RegexAST;
-      setAstData(parsed);
+      setManualAstData(parsed);
       setParseError(null);
     } catch (error) {
       setParseError(error instanceof Error ? error.message : 'Unknown parsing error');
@@ -232,8 +248,15 @@ const RegexASTVisualizer: React.FC = () => {
   };
 
   const loadExample = (example: RegexAST): void => {
-    setAstData(example);
+    setManualMode(true);
+    setManualAstData(example);
     setInputJson(JSON.stringify(example, null, 2));
+    setParseError(null);
+  };
+
+  // Toggle between pattern parsing mode and manual mode
+  const toggleMode = (): void => {
+    setManualMode(!manualMode);
     setParseError(null);
   };
 
@@ -252,43 +275,95 @@ const RegexASTVisualizer: React.FC = () => {
             <div className="text-blue-400 text-4xl">🌳</div>
             <span>Regex AST Visualizer</span>
           </h1>
-          <p className="text-slate-400 text-lg">Visualize your regex Abstract Syntax Tree (Top-to-Bottom)</p>
+          <p className="text-slate-400 text-lg">Visualize your regex Abstract Syntax Tree</p>
         </div>
 
-        {/* Example patterns */}
+        {/* Mode Toggle & Current Pattern Display */}
         <div className="mb-6 bg-slate-900 border border-slate-700 rounded-lg p-4 max-w-4xl mx-auto">
-          <h3 className="text-lg font-semibold text-white mb-3">Quick Examples</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {examplePatterns.map((example, index) => (
-              <button
-                key={index}
-                onClick={() => loadExample(example.ast)}
-                className="text-left p-3 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-600"
-              >
-                <code className="text-emerald-400 font-mono text-sm">{example.pattern}</code>
-                <p className="text-slate-400 text-xs mt-1">{example.description}</p>
-              </button>
-            ))}
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-white">Input Mode</h3>
+            <button
+              onClick={toggleMode}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                manualMode 
+                  ? 'bg-purple-600 hover:bg-purple-700 text-white' 
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
+            >
+              {manualMode ? '📝 Manual JSON' : '🔄 Auto Pattern'}
+            </button>
           </div>
+
+          {!manualMode && (
+            <div className="mb-4">
+              {hasValidPattern ? (
+                <div className="p-3 bg-slate-800 rounded-lg border border-green-600">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className="text-green-400">✅</span>
+                    <span className="text-white font-medium">Current Pattern:</span>
+                  </div>
+                  <code className="text-emerald-400 font-mono text-lg">{pattern}</code>
+                  <p className="text-slate-400 text-sm mt-1">AST automatically generated from your pattern</p>
+                </div>
+              ) : pattern.trim() && error ? (
+                <div className="p-3 bg-red-900 border border-red-700 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className="text-red-400">❌</span>
+                    <span className="text-white font-medium">Pattern Error:</span>
+                  </div>
+                  <code className="text-red-300 font-mono">{pattern}</code>
+                  <p className="text-red-300 text-sm mt-1">{error}</p>
+                </div>
+              ) : (
+                <div className="p-3 bg-slate-800 rounded-lg border border-slate-600">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className="text-slate-400">ℹ️</span>
+                    <span className="text-white font-medium">No Pattern:</span>
+                  </div>
+                  <p className="text-slate-400 text-sm">Enter a pattern in the main matcher to see its AST here, or switch to manual mode</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {manualMode && (
+            <div>
+              <h4 className="text-white font-medium mb-3">Example Patterns</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                {examplePatterns.map((example, index) => (
+                  <button
+                    key={index}
+                    onClick={() => loadExample(example.ast)}
+                    className="text-left p-3 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-600"
+                  >
+                    <code className="text-emerald-400 font-mono text-sm">{example.pattern}</code>
+                    <p className="text-slate-400 text-xs mt-1">{example.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Input Section */}
-        <div className="mb-8 max-w-4xl mx-auto">
-          <div className="bg-slate-900 border border-slate-700 rounded-lg p-4">
-            <h2 className="text-xl font-semibold text-white mb-4">Input AST JSON</h2>
-            <textarea
-              value={inputJson}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleJsonChange(e.target.value)}
-              className="w-full h-32 bg-slate-950 border border-slate-700 rounded-lg p-3 text-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Paste your AST JSON here..."
-            />
-            {parseError && (
-              <div className="mt-2 p-2 bg-red-900 border border-red-700 rounded text-red-300 text-sm">
-                ❌ JSON Parse Error: {parseError}
-              </div>
-            )}
+        {/* Manual JSON Input Section (only shown in manual mode) */}
+        {manualMode && (
+          <div className="mb-8 max-w-4xl mx-auto">
+            <div className="bg-slate-900 border border-slate-700 rounded-lg p-4">
+              <h2 className="text-xl font-semibold text-white mb-4">Manual AST JSON Input</h2>
+              <textarea
+                value={inputJson}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleJsonChange(e.target.value)}
+                className="w-full h-32 bg-slate-950 border border-slate-700 rounded-lg p-3 text-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Paste your AST JSON here..."
+              />
+              {parseError && (
+                <div className="mt-2 p-2 bg-red-900 border border-red-700 rounded text-red-300 text-sm">
+                  ❌ JSON Parse Error: {parseError}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Tab Navigation */}
         <div className="mb-6 flex justify-center">
@@ -316,29 +391,34 @@ const RegexASTVisualizer: React.FC = () => {
 
         {/* Content */}
         <div className="space-y-6">
-          {activeTab === 'tree' && !parseError && (
+          {activeTab === 'tree' && !parseError && currentAST && (
             <div className="bg-slate-900 border border-slate-700 rounded-lg p-6">
               <h2 className="text-2xl font-semibold text-white mb-6 flex items-center justify-center space-x-2">
                 <span className="text-2xl">🌳</span>
-                <span>AST Tree Structure (Top-to-Bottom)</span>
+                <span>AST Tree Structure</span>
+                {!manualMode && hasValidPattern && (
+                  <span className="text-sm text-emerald-400 bg-emerald-900 px-2 py-1 rounded ml-2">
+                    Live from Pattern
+                  </span>
+                )}
               </h2>
               <div className="bg-slate-950 border border-slate-800 rounded-lg p-8 overflow-x-auto">
                 <div className="flex justify-center">
-                  <TreeNode node={astData} />
+                  <TreeNode node={currentAST} />
                 </div>
               </div>
             </div>
           )}
 
-          {activeTab === 'stats' && !parseError && (
+          {activeTab === 'stats' && !parseError && currentAST && (
             <div className="max-w-4xl mx-auto">
-              <ASTStats ast={astData} />
+              <ASTStats ast={currentAST} />
             </div>
           )}
 
-          {activeTab === 'json' && !parseError && (
+          {activeTab === 'json' && !parseError && currentAST && (
             <div className="max-w-4xl mx-auto">
-              <JsonView data={astData} title="Formatted AST JSON" />
+              <JsonView data={currentAST} title="Formatted AST JSON" />
             </div>
           )}
         </div>

@@ -24,7 +24,6 @@ export const nodeConfig: Record<string, NodeConfig> = {
   BackReference: { color: 'bg-rose-600', icon: '\\1', description: 'Back reference' }
 };
 
-// Props for TreeNode component
 interface TreeNodeProps {
   node: RegexAST;
   level?: number;
@@ -33,7 +32,6 @@ interface TreeNodeProps {
   xOffset?: number;
 }
 
-// Tree Node Component - Now renders top to bottom
 const TreeNode: React.FC<TreeNodeProps> = ({ 
   node, 
   level = 0, 
@@ -46,7 +44,6 @@ const TreeNode: React.FC<TreeNodeProps> = ({
     description: 'Unknown type' 
   };
   
-  // Determine children based on node type
   const getChildren = (node: RegexAST): RegexAST[] => {
     switch (node.type) {
       case 'Sequence':
@@ -70,11 +67,9 @@ const TreeNode: React.FC<TreeNodeProps> = ({
     }
   };
 
-  // Get node-specific properties for display
   const getNodeProperties = (node: RegexAST): JSX.Element[] => {
     const properties: JSX.Element[] = [];
     
-    // Handle different node types
     switch (node.type) {
       case 'Literal':
         properties.push(

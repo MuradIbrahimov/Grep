@@ -3,7 +3,6 @@ import { useState } from "react";
 import {Code, Copy} from "lucide-react";
 import type { RegexAST } from "../../../../server/engine/constants";
 
-// Props for JsonView component
 interface JsonViewProps {
   data: RegexAST;
   title: string;
