@@ -1,6 +1,7 @@
 import React, { useState, type JSX } from 'react';
 import { ChevronDown, ChevronRight} from 'lucide-react';
 import type { RegexAST } from '../../../../server/engine/constants';
+
 // Node configuration interface
 export interface NodeConfig {
   color: string;
@@ -28,8 +29,6 @@ interface TreeNodeProps {
   node: RegexAST;
   level?: number;
   path?: number[];
-  parentWidth?: number;
-  xOffset?: number;
 }
 
 const TreeNode: React.FC<TreeNodeProps> = ({ 
@@ -37,6 +36,15 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   level = 0, 
   path = [],
 }) => {
+  // Early return if node is invalid
+  if (!node || !node.type) {
+    return (
+      <div className="bg-red-900 text-red-200 p-2 rounded text-xs">
+        Invalid node
+      </div>
+    );
+  }
+
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
   const config = nodeConfig[node.type] || { 
     color: 'bg-gray-500', 
@@ -45,14 +53,17 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   };
   
   const getChildren = (node: RegexAST): RegexAST[] => {
+    if (!node) return [];
+    
     switch (node.type) {
       case 'Sequence':
-        return node.elements;
+        return Array.isArray(node.elements) ? node.elements.filter(Boolean) : [];
       case 'Alternative':
-        return node.options;
+        return Array.isArray(node.options) ? node.options.filter(Boolean) : [];
       case 'Quantifier':
+        return node.child ? [node.child] : [];
       case 'Group':
-        return [node.child];
+        return node.child ? [node.child] : [];
       default:
         return [];
     }
@@ -70,161 +81,196 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   const getNodeProperties = (node: RegexAST): JSX.Element[] => {
     const properties: JSX.Element[] = [];
     
+    if (!node) return properties;
+    
     switch (node.type) {
       case 'Literal':
-        properties.push(
-          <code key="value" className="text-emerald-400 bg-slate-800 px-2 py-1 rounded text-sm">
-            "{node.value}"
-          </code>
-        );
+        if (node.value !== undefined) {
+          properties.push(
+            <code key="value" className="text-emerald-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">
+              "{node.value}"
+            </code>
+          );
+        }
         break;
         
       case 'Quantifier':
-        properties.push(
-          <code key="quant" className="text-purple-400 bg-slate-800 px-2 py-1 rounded text-sm font-bold">
-            {node.quant}
-          </code>
-        );
+        if (node.quant !== undefined) {
+          properties.push(
+            <code key="quant" className="text-purple-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs font-bold">
+              {node.quant}
+            </code>
+          );
+        }
         break;
         
       case 'CharClass':
-        properties.push(
-          <code key="chars" className="text-indigo-400 bg-slate-800 px-2 py-1 rounded text-sm">
-            [{node.chars}]
-          </code>
-        );
+        if (node.chars !== undefined) {
+          properties.push(
+            <code key="chars" className="text-indigo-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">
+              [{node.chars}]
+            </code>
+          );
+        }
         if (node.negated) {
           properties.push(
-            <span key="negated" className="text-red-400 text-sm font-semibold">[NEGATED]</span>
+            <span key="negated" className="text-red-400 text-xs font-semibold">[NEG]</span>
           );
         }
         break;
         
       case 'Anchor':
-        properties.push(
-          <code key="kind" className="text-teal-400 bg-slate-800 px-2 py-1 rounded text-sm">
-            {node.kind === 'start' ? '^' : '$'}
-          </code>
-        );
+        if (node.kind !== undefined) {
+          properties.push(
+            <code key="kind" className="text-teal-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">
+              {node.kind === 'start' ? '^' : '$'}
+            </code>
+          );
+        }
         break;
         
       case 'Group':
-        properties.push(
-          <span key="index" className="text-pink-400 bg-slate-800 px-2 py-1 rounded text-sm">
-            Group #{node.index}
-          </span>
-        );
+        if (node.index !== undefined) {
+          properties.push(
+            <span key="index" className="text-pink-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">
+              #{node.index}
+            </span>
+          );
+        }
         break;
         
       case 'BackReference':
-        properties.push(
-          <span key="backref" className="text-rose-400 bg-slate-800 px-2 py-1 rounded text-sm">
-            \\{node.index}
-          </span>
-        );
+        if (node.index !== undefined) {
+          properties.push(
+            <span key="backref" className="text-rose-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">
+              \\{node.index}
+            </span>
+          );
+        }
         break;
     }
     
     return properties;
   };
 
-  // Calculate positioning for vertical tree
-  const nodeWidth = 280; // Fixed width for each node
-  const horizontalSpacing = 320; // Space between siblings
+  // Determine if we should use horizontal layout for children
+  const shouldUseHorizontalLayout = (children: RegexAST[], currentLevel: number) => {
+    // Use horizontal for sequences at shallow levels, and when children are mostly leaf nodes
+    if (node.type === 'Sequence' && currentLevel <= 2) return true;
+    if (node.type === 'Alternative' && currentLevel <= 1) return true;
+    
+    // Check if most children are leaf nodes (no children of their own)
+    const leafChildren = children.filter(child => getChildren(child).length === 0);
+    return leafChildren.length >= children.length * 0.7; // 70% are leaves
+  };
+
+  const useHorizontalLayout = hasChildren && shouldUseHorizontalLayout(children, level);
 
   return (
-    <div className="relative inline-block">
-      {/* Node content */}
-      <div className="flex flex-col items-center">
-        {/* Connection line from parent (vertical line down) */}
-        {level > 0 && (
-          <div className="w-px h-8 bg-slate-600 mb-2"></div>
+    <div className="relative">
+      {/* Connection line from parent */}
+      {level > 0 && (
+        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-px h-4 bg-slate-600"></div>
+      )}
+      
+      {/* The actual node */}
+      <div 
+        className="flex flex-col items-center space-y-1 py-2 px-3 rounded-lg cursor-pointer hover:bg-slate-800 transition-colors group border border-slate-700 bg-slate-900 min-w-0 max-w-48"
+        onClick={toggleExpanded}
+      >
+        {/* Header with expand/collapse and type */}
+        <div className="flex items-center space-x-2 min-w-0">
+          {hasChildren && (
+            isExpanded ? (
+              <ChevronDown size={14} className="text-slate-400 flex-shrink-0" />
+            ) : (
+              <ChevronRight size={14} className="text-slate-400 flex-shrink-0" />
+            )
+          )}
+          
+          {/* Node type badge - more compact */}
+          <div className={`${config.color} text-white text-xs font-mono px-2 py-0.5 rounded flex items-center space-x-1 flex-shrink-0`}>
+            <span className="text-xs">{config.icon}</span>
+            <span className="truncate">{node.type}</span>
+          </div>
+        </div>
+        
+        {/* Node properties */}
+        {getNodeProperties(node).length > 0 && (
+          <div className="flex flex-wrap justify-center gap-1 min-w-0">
+            {getNodeProperties(node)}
+          </div>
         )}
         
-        {/* The actual node */}
-        <div 
-          className="flex flex-col items-center space-y-2 py-3 px-4 rounded-lg cursor-pointer hover:bg-slate-800 transition-colors group border border-slate-700 bg-slate-900 max-w-xs"
-          onClick={toggleExpanded}
-        >
-          {/* Expand/collapse icon */}
-          <div className="flex items-center justify-center mb-1">
-            {hasChildren ? (
-              isExpanded ? (
-                <ChevronDown size={16} className="text-slate-400" />
-              ) : (
-                <ChevronRight size={16} className="text-slate-400" />
-              )
-            ) : (
-              <div className="w-4 h-4"></div>
-            )}
-          </div>
-          
-          {/* Node type badge */}
-          <div className={`${config.color} text-white text-xs font-mono px-3 py-1 rounded flex items-center space-x-1`}>
-            <span>{config.icon}</span>
-            <span>{node.type}</span>
-          </div>
-          
-          {/* Node details */}
-          <div className="text-center">
-            <div className="flex flex-col items-center space-y-1">
-              <span className="text-slate-300 font-medium text-sm">{node.type}</span>
-              <div className="flex flex-wrap justify-center gap-1">
-                {getNodeProperties(node)}
-              </div>
+        {/* Children count for collapsed nodes */}
+        {hasChildren && !isExpanded && (
+          <span className="text-slate-500 text-xs bg-slate-700 px-1.5 py-0.5 rounded">
+            {children.length}
+          </span>
+        )}
+        
+        {/* Description on hover */}
+        <div className="text-slate-500 text-xs opacity-0 group-hover:opacity-100 transition-opacity text-center absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-slate-800 px-2 py-1 rounded whitespace-nowrap z-10 pointer-events-none">
+          {config.description}
+        </div>
+      </div>
+
+      {/* Children container */}
+      {hasChildren && isExpanded && children.length > 0 && (
+        <div className="relative mt-4">
+          {useHorizontalLayout ? (
+            // Horizontal layout for sequences and alternatives
+            <div className="flex flex-wrap justify-center gap-3 mt-4">
+              {children.map((child: RegexAST, index: number) => {
+                // Skip invalid children
+                if (!child || !child.type) return null;
+                
+                return (
+                  <div key={index} className="relative">
+                    {/* Connection line to child */}
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-px h-4 bg-slate-600"></div>
+                    <TreeNode 
+                      node={child} 
+                      level={level + 1} 
+                      path={[...path, index]}
+                    />
+                  </div>
+                );
+              }).filter(Boolean)}
             </div>
-            <div className="text-slate-500 text-xs mt-2 opacity-0 group-hover:opacity-100 transition-opacity text-center">
-              {config.description}
+          ) : (
+            // Vertical layout for deep nesting
+            <div className="space-y-4 ml-6 border-l border-slate-600 pl-4">
+              {children.map((child: RegexAST, index: number) => {
+                // Skip invalid children
+                if (!child || !child.type) return null;
+                
+                return (
+                  <div key={index} className="relative">
+                    {/* Horizontal connector to child */}
+                    <div className="absolute -left-4 top-6 w-4 h-px bg-slate-600"></div>
+                    <TreeNode 
+                      node={child} 
+                      level={level + 1} 
+                      path={[...path, index]}
+                    />
+                  </div>
+                );
+              }).filter(Boolean)}
             </div>
-          </div>
-          
-          {/* Children count */}
-          {hasChildren && (
-            <span className="text-slate-500 text-xs bg-slate-700 px-2 py-1 rounded mt-1">
-              {children.length} child{children.length !== 1 ? 'ren' : ''}
-            </span>
           )}
         </div>
+      )}
+    </div>
+  );
+};
 
-        {/* Children container */}
-        {hasChildren && isExpanded && children.length > 0 && (
-          <div className="relative pt-8">
-            {/* Vertical line down to children area */}
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-px h-8 bg-slate-600"></div>
-            
-            {/* Horizontal connector line for multiple children */}
-            {children.length > 1 && (
-              <div 
-                className="absolute top-8 bg-slate-600 h-px"
-                style={{
-                  left: `calc(${horizontalSpacing / 2}px)`,
-                  right: `calc(${horizontalSpacing / 2}px)`,
-                }}
-              ></div>
-            )}
-            
-            {/* Vertical lines to each child */}
-            <div className="flex" style={{ gap: `${horizontalSpacing}px` }}>
-              {children.map((child: RegexAST, index: number) => (
-                <div key={index} className="relative flex flex-col items-center">
-                  {/* Vertical line up to horizontal connector */}
-                  {children.length > 1 && (
-                    <div className="w-px h-8 bg-slate-600"></div>
-                  )}
-                  
-                  {/* Child node */}
-                  <TreeNode 
-                    node={child} 
-                    level={level + 1} 
-                    path={[...path, index]}
-                    parentWidth={nodeWidth}
-                    xOffset={index * horizontalSpacing}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+// Main wrapper component with scroll optimization
+const RegexTreeViewer: React.FC<{ ast: RegexAST }> = ({ ast }) => {
+  return (
+    <div className="w-full h-full overflow-auto bg-slate-950 p-8">
+      <div className="flex justify-center min-w-fit">
+        <TreeNode node={ast} />
       </div>
     </div>
   );
